@@ -61,11 +61,6 @@ void loop() {
     serialData = bluetooth.read();
     clean(serialData);
   }
-  if (bluetooth.available() == false)
-  {
-    modeData = false;
-  }
-  
   mode();
 }
 
