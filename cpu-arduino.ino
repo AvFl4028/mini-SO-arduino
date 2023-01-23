@@ -26,29 +26,34 @@ Servo motor;
 
   // BOOl
     bool modeData = false;                           // Verifica si esta conectado el bluetooth
-    bool modeCommandActivate = false;  
+    bool modeCommandActivate = false;
+    bool modeAbout = false;  
   //INT
     int y;                                  // Parte de la funcion de selector de menu
     int x;
     int commandsSelect;
+    int commandsSelectX;
     int len = sizeof(modes) / sizeof(modes[0]); // Tamaño del array de modes[]
     int commandLen = sizeof(commandsTxt) / sizeof(commandsTxt[0]);
 
+//Function that only execute only one tine
 void setup() {
+  //Start the bluetooth and Serial Port
   bluetooth.begin(9600);
   bluetooth.println("Connected");
   Serial.begin(9600);
-
+  //Start the LCD with IC2
   lcd.init();
   lcd.backlight();
   lcd.setCursor(0,0);
   lcd.print("Initializing...");
   delay(1000);
   lcd.clear();
-
+  //Start the servo-motor
   motor.attach(6);
 }
 
+//Loop for arduino
 void loop() {
   if (bluetooth.available())
   {
@@ -56,12 +61,17 @@ void loop() {
     serialData = bluetooth.read();
     clean(serialData);
   }
+  if (bluetooth.available() == false)
+  {
+    modeData = false;
+  }
+  
   mode();
 }
 
 //NOTE - Funcion de modo
 void mode(){
-  if (modeData == 1)
+  if (modeData)
   {
     menu();
   }else if(modeData == false){
@@ -81,6 +91,7 @@ void menu(){
   selectMenu();
   subMenu();
   commands();
+  infoAbout();
 /**
     lcd.setCursor(0,0);
     lcd.print(serialData);
@@ -194,12 +205,18 @@ void subMenu(){
     {
       modeCommandActivate = true;
     }
+    if (y == 2)
+    {
+      modeAbout = true;
+    }
+    
   }else if (modeCommandActivate && x == 2)
   {
     lcd.clear();
   }
   else{
     modeCommandActivate = false;
+    modeAbout = false;
   }
     return;
 }
@@ -220,7 +237,6 @@ void clean(char data)
 }
 
 //NOTE - Funcion de comandos
-//TODO - Cambiar los comandos a una lista
 
 void commands(){
   if(modeCommandActivate == true){
@@ -259,10 +275,21 @@ void commands(){
   }
 }
 
-
+void infoAbout(){
+  if(modeAbout)
+  {
+    lcd.clear();
+    lcd.setCursor(0, 0);
+    lcd.print("-SO: Arduino OS-");
+    lcd.setCursor(0, 1);
+    lcd.print("-Based in C++ --");
+    delay(500);
+  }
+}
 //NOTE - Funcion de controlar servomotor
 //REVIEW - NO SE HA PROBADO
-void Motor(char i){
+void Motor(){
+  char i;
   int angle = map(i, 0, 9, 0, 180);
   if (i < 180)
   {
