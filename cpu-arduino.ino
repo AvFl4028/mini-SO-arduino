@@ -14,7 +14,7 @@ LiquidCrystal_I2C lcd(0x27, 16, 2);
 // SCL     A5
 
 Servo motor;
-// Pin 6
+// Pin 6 
 
 // DATA
   // CHAR
@@ -22,12 +22,15 @@ Servo motor;
   // STRING
     String info;
     String modes[] = {"Commands", "Motor", "Info"};
-    String commandsTxt[] = {"ls", "mkdir", "neofetch"};
+    String commandsTxt[] = {"ls", "mkdir", "neofetch", "test"};
 
-  // INT
-    int modeData = 0;                           // Verifica si esta conectado el bluetooth
+  // BOOl
+    bool modeData = false;                           // Verifica si esta conectado el bluetooth
+    bool modeCommandActivate = false;  
+  //INT
     int y;                                  // Parte de la funcion de selector de menu
     int x;
+    int commandsSelect;
     int len = sizeof(modes) / sizeof(modes[0]); // Tamaño del array de modes[]
     int commandLen = sizeof(commandsTxt) / sizeof(commandsTxt[0]);
 
@@ -49,7 +52,7 @@ void setup() {
 void loop() {
   if (bluetooth.available())
   {
-    modeData = 1;
+    modeData = true;
     serialData = bluetooth.read();
     clean(serialData);
   }
@@ -61,7 +64,7 @@ void mode(){
   if (modeData == 1)
   {
     menu();
-  }else if(modeData == 0){
+  }else if(modeData == false){
     lcd.setCursor(0, 0);
     lcd.print("Esperando");
     lcd.setCursor(0, 1);
@@ -77,7 +80,8 @@ void menu(){
   select();
   selectMenu();
   subMenu();
-  /*+
+  commands();
+/**
     lcd.setCursor(0,0);
     lcd.print(serialData);
 
@@ -88,30 +92,73 @@ void menu(){
 }
 
 void select(){
-  switch (serialData)
+  if (modeCommandActivate)
   {
-  case '1':
-    y--;
-    serialData = '0';
-    break;
-  case '2':
-    y++;
-    serialData = '0';
-    break;
-  case '3':
-    x = 1;
-    serialData = '0';
-    break;
-  case '4':
-    x = 0;
-    serialData = '0';
-    break;
-  default:
-    break;
+    switch (serialData)
+    {
+    case '1': // Up
+      commandsSelect--;
+      serialData = '0';
+      break;
+    case '2': // Down
+      commandsSelect++;
+      serialData = '0';
+      break;
+    case '3': // Right
+      commandsSelect = 0;
+      serialData = '0';
+      break;
+    case '4': // Left
+      x--;
+      serialData = '0';
+      break;
+    default:
+      break;
+    }
   }
-  if (y > len - 1 || y < 0)
+  //Move in y axis in the main mode
+  else{
+    switch (serialData)
+    {
+    case '1': // Up
+      y--;
+      serialData = '0';
+      break;
+    case '2': // Down
+      y++;
+      serialData = '0';
+      break;
+    case '3': // Right
+      x = 1;
+      commandsSelect = 0;
+      serialData = '0';
+      break;
+    case '4': // Left
+      x--;
+      serialData = '0';
+      break;
+    default:
+      break;
+    }
+  }
+
+  //For y axis
+  if (y > len - 1)
+  {
+    y--;
+  }else if (y < 0)
   {
     y = 0;
+  }
+  
+  //For y axis in commands mode
+  if (commandsSelect > commandLen - 1)
+  {
+    commandsSelect--;
+  }
+  else if (commandsSelect < 0)
+  {
+    commandsSelect = 0;
   }
 }
 
@@ -145,10 +192,16 @@ void subMenu(){
     lcd.clear();
     if (y == 0)
     {
-      commands();
+      modeCommandActivate = true;
     }
+  }else if (modeCommandActivate && x == 2)
+  {
+    lcd.clear();
   }
-  return;
+  else{
+    modeCommandActivate = false;
+  }
+    return;
 }
 
 //NOTE - Funcion de limpiar pantalla
@@ -170,52 +223,42 @@ void clean(char data)
 //TODO - Cambiar los comandos a una lista
 
 void commands(){
-  lcd.clear();
-  lcd.setCursor(0, 0);
-  lcd.print("--Command Mode--");
-  delay(500);
-  lcd.clear();
-
-  String file;
-  String string;
-  
-  if (string == "ls")
-  {
-    if (file == "")
+  if(modeCommandActivate == true){
+    if(commandsSelect == 0)
+    {
+      lcd.setCursor(0,0);
+      lcd.print(">" + commandsTxt[0]);
+      lcd.setCursor(1,1);
+      lcd.print(commandsTxt[1]);
+    }
+    else if(commandsSelect == 1)
+    {
+      lcd.setCursor(1, 0);
+      lcd.print(commandsTxt[0]);
+      lcd.setCursor(0, 1);
+      lcd.print(">" + commandsTxt[1]);
+    }
+    else if (commandsSelect == 2)
     {
       lcd.clear();
-      lcd.print("no hay archivos");
-      info = "";
-    }else {
-      lcd.clear();
-      lcd.print(file);
-      info = "";
+      lcd.setCursor(0,0);
+      lcd.print(">" + commandsTxt[2]);
+      lcd.setCursor(1,1);
+      lcd.print(commandsTxt[3]);
     }
-  }else if(string == "mkdir")
-  {
-  
-    lcd.clear();
-    lcd.print("File name: ");
-    lcd.setCursor(0,1);
-    lcd.print(info);
-    file = info;
-    delay(100);
-    info = "";
-  
-  }else if(string == "neofetch")
-  {
+    else if (commandsSelect == 3)
+    {
+      lcd.setCursor(1, 0);
+      lcd.print(commandsTxt[2]);
+      lcd.setCursor(0, 1);
+      lcd.print(">" + commandsTxt[3]);
+    }
     
-    lcd.clear();
-    lcd.setCursor(0,0);
-    lcd.print("SO: Test");  
-  
   }else{
-    lcd.clear();
-    lcd.setCursor(0,0);
-    lcd.print("Command error");
-  
+    return;
   }
 }
+
 
 //NOTE - Funcion de controlar servomotor
 //REVIEW - NO SE HA PROBADO
