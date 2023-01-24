@@ -40,7 +40,6 @@ Servo motor;
 void setup() {
   //Start the bluetooth and Serial Port
   bluetooth.begin(9600);
-  bluetooth.println("Connected");
   Serial.begin(9600);
   //Start the LCD with IC2
   lcd.init();
@@ -59,6 +58,7 @@ void loop() {
   {
     modeData = true;
     serialData = bluetooth.read();
+    Serial.print(serialData);
     clean(serialData);
   }
   mode();
