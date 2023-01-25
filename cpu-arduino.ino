@@ -21,19 +21,31 @@ Servo motor;
     char serialData;
   // STRING
     String info;
-    String modes[] = {"Commands", "Motor", "Info"};
-    String commandsTxt[] = {"ls", "mkdir", "neofetch", "test"};
+    String commandsTxt[] = {
+      "led 1",
+      "led 2",
+      "SO",
+      "uptime",
+      "temperature", 
+      "print txt",
+      "Motor"
+      };  
 
+  //Pins
+    #define tempRead A0
+    #define ledOne 4
+    #define ledTwo 5
+    #define servo_motor 6
   // BOOl
     bool modeData = false;                           // Verifica si esta conectado el bluetooth
-    bool modeCommandActivate = false;
-    bool modeAbout = false;  
+    bool commandActivate = false;
+    bool systemCommand = false;
+    bool commandSystem = false;
+    bool modeMotor = false;
   //INT
     int y;                                  // Parte de la funcion de selector de menu
     int x;
     int commandsSelect;
-    int commandsSelectX;
-    int len = sizeof(modes) / sizeof(modes[0]); // Tamaño del array de modes[]
     int commandLen = sizeof(commandsTxt) / sizeof(commandsTxt[0]);
 
 //Function that only execute only one tine
@@ -44,12 +56,9 @@ void setup() {
   //Start the LCD with IC2
   lcd.init();
   lcd.backlight();
-  lcd.setCursor(0,0);
-  lcd.print("Initializing...");
-  delay(1000);
-  lcd.clear();
+  beginMessage();
   //Start the servo-motor
-  motor.attach(6);
+  motor.attach(servo_motor);
 }
 
 //Loop for arduino
@@ -61,7 +70,48 @@ void loop() {
     Serial.print(serialData);
     clean(serialData);
   }
+
   mode();
+}
+
+void beginMessage(){
+  lcd.setCursor(0, 0);
+  lcd.print("Booting AROPSY.");
+  delay(500);
+
+  lcd.clear();
+  lcd.setCursor(0, 0);
+  lcd.print("Booting AROPSY..");
+  delay(500);
+
+  lcd.clear();
+  lcd.setCursor(0, 0);
+  lcd.print("Booting AROPSY.");
+  delay(500);
+
+  lcd.clear();
+  lcd.setCursor(0, 0);
+  lcd.print("Booting AROPSY..");
+  delay(500);
+
+  lcd.clear();
+  lcd.setCursor(0, 0);
+  lcd.print("Booting AROPSY.");
+  delay(500);
+
+  lcd.clear();
+  lcd.setCursor(0, 0);
+  lcd.print("Booting AROPSY..");
+  delay(500);
+
+  lcd.clear();
+  lcd.setCursor(0, 0);
+  lcd.print("Loading...");
+  lcd.setCursor(0, 1);
+  lcd.print("----------------");
+
+  delay(2000);
+  lcd.clear();
 }
 
 //NOTE - Funcion de modo
@@ -81,41 +131,21 @@ void mode(){
 //NOTE - Funcion de menu
 void menu(){
   lcd.clear();
-
   select();
   selectMenu();
   subMenu();
-  commands();
-  infoAbout();
-/**
-    lcd.setCursor(0,0);
-    lcd.print(serialData);
-
-    lcd.setCursor(0, 1);
-    lcd.print(len);
-*/
-  delay(200);
+  delay(150);
 }
 
 void select(){
-  if (modeCommandActivate)
+  if (commandActivate)
   {
     switch (serialData)
     {
-    case '1': // Up
-      commandsSelect--;
-      serialData = '0';
-      break;
-    case '2': // Down
-      commandsSelect++;
-      serialData = '0';
-      break;
     case '3': // Right
-      commandsSelect = 0;
       serialData = '0';
       break;
     case '4': // Left
-      x--;
       serialData = '0';
       break;
     default:
@@ -140,7 +170,7 @@ void select(){
       serialData = '0';
       break;
     case '4': // Left
-      x--;
+      x = 0;
       serialData = '0';
       break;
     default:
@@ -149,7 +179,7 @@ void select(){
   }
 
   //For y axis
-  if (y > len - 1)
+  if (y > commandLen - 1)
   {
     y--;
   }else if (y < 0)
@@ -172,48 +202,95 @@ void selectMenu()
 {
   if (y == 0)
   {
-    lcd.setCursor(0,0);
-    lcd.print(">" + modes[0]);
+    lcd.setCursor(0, 0);
+    lcd.print(">" + commandsTxt[0]);
     lcd.setCursor(1, 1);
-    lcd.print(modes[1]);
+    lcd.print(commandsTxt[1]);
   }
-  if (y == 1)
+  else if (y == 1)
   {
     lcd.setCursor(1, 0);
-    lcd.print(modes[0]);
+    lcd.print(commandsTxt[0]);
     lcd.setCursor(0, 1);
-    lcd.print(">" + modes[1]);
+    lcd.print(">" + commandsTxt[1]);
   }
-  if (y == 2)
+  else if (y == 2)
   {
     lcd.clear();
     lcd.setCursor(0, 0);
-    lcd.print(">" + modes[2]);
+    lcd.print(">" + commandsTxt[2]);
+    lcd.setCursor(1, 1);
+    lcd.print(commandsTxt[3]);
+  }
+  else if (y == 3)
+  {
+    lcd.setCursor(1, 0);
+    lcd.print(commandsTxt[2]);
+    lcd.setCursor(0, 1);
+    lcd.print(">" + commandsTxt[3]);
+  }
+  else if (y == 4)
+  {
+    lcd.clear();
+    lcd.setCursor(0, 0);
+    lcd.print(">" + commandsTxt[4]);
+    lcd.setCursor(1, 1);
+    lcd.print(commandsTxt[5]);
+  }
+  else if (y == 5)
+  {
+    lcd.setCursor(1, 0);
+    lcd.print(commandsTxt[4]);
+    lcd.setCursor(0, 1);
+    lcd.print(">" + commandsTxt[5]);
+  }
+  else if (y == 6)
+  {
+    lcd.clear();
+    lcd.setCursor(0, 0);
+    lcd.print(">" + commandsTxt[6]);
   }
 }
 
 void subMenu(){
+  //Seleccion del primer menu
   if (x == 1)
   {
     lcd.clear();
+    //Seleccion de las opciones del menu
     if (y == 0)
     {
-      modeCommandActivate = true;
+      willBeAdded();
+    }
+    if (y == 1)
+    {
+      willBeAdded();
     }
     if (y == 2)
     {
-      modeAbout = true;
+      systemOperativeCommand();
     }
-    
-  }else if (modeCommandActivate && x == 2)
+    if (y == 3)
+    {
+      willBeAdded();
+    }
+    if (y == 4)
+    {
+      willBeAdded();
+    }
+    if (y == 5)
+    {
+      willBeAdded();
+    }
+    if (y == 6)
+    {
+      willBeAdded();
+    }
+  }else
   {
-    lcd.clear();
+    systemCommand = false;
   }
-  else{
-    modeCommandActivate = false;
-    modeAbout = false;
-  }
-    return;
+  return;
 }
 
 //NOTE - Funcion de limpiar pantalla
@@ -228,58 +305,18 @@ void clean(char data)
     lcd.clear();
     info = "";
   }
-
+return;
 }
 
 //NOTE - Funcion de comandos
 
-void commands(){
-  if(modeCommandActivate == true){
-    if(commandsSelect == 0)
-    {
-      lcd.setCursor(0,0);
-      lcd.print(">" + commandsTxt[0]);
-      lcd.setCursor(1,1);
-      lcd.print(commandsTxt[1]);
-    }
-    else if(commandsSelect == 1)
-    {
-      lcd.setCursor(1, 0);
-      lcd.print(commandsTxt[0]);
-      lcd.setCursor(0, 1);
-      lcd.print(">" + commandsTxt[1]);
-    }
-    else if (commandsSelect == 2)
-    {
-      lcd.clear();
-      lcd.setCursor(0,0);
-      lcd.print(">" + commandsTxt[2]);
-      lcd.setCursor(1,1);
-      lcd.print(commandsTxt[3]);
-    }
-    else if (commandsSelect == 3)
-    {
-      lcd.setCursor(1, 0);
-      lcd.print(commandsTxt[2]);
-      lcd.setCursor(0, 1);
-      lcd.print(">" + commandsTxt[3]);
-    }
-    
-  }else{
-    return;
-  }
-}
-
-void infoAbout(){
-  if(modeAbout)
-  {
-    lcd.clear();
-    lcd.setCursor(0, 0);
-    lcd.print("-SO: Arduino OS-");
-    lcd.setCursor(0, 1);
-    lcd.print("-Based in C++ --");
-    delay(500);
-  }
+void systemOperativeCommand(){
+  lcd.setCursor(0, 0);
+  lcd.print("-SO: AROPSY-");
+  lcd.setCursor(0, 1);
+  lcd.print("-Based in C++ --");
+  delay(500);
+  return;
 }
 //NOTE - Funcion de controlar servomotor
 //REVIEW - NO SE HA PROBADO
@@ -301,4 +338,30 @@ void Motor(){
 
     motor.write(angle);
   }
+}
+
+void ledOneFunction(){
+
+}
+void ledTwoFunction(){
+
+}
+
+void tempFunction(){
+
+}
+
+void uptimeFunction(){
+
+}
+
+void printTextFunction(){
+
+}
+
+void willBeAdded(){
+  lcd.setCursor(0,0);
+  lcd.print("This function is");
+  lcd.setCursor(1,1);
+  lcd.print("in progress :D");
 }
