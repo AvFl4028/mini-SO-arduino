@@ -29,7 +29,12 @@ Servo motor;
       "temperature", 
       "print txt",
       "Motor"
-      };  
+      };
+
+    String ledsText[] = {
+      "On",
+      "Off"
+      };
 
   //Pins
     #define tempRead A0
@@ -37,26 +42,33 @@ Servo motor;
     #define ledTwo 5
     #define servo_motor 6
   // BOOl
-    bool modeData = false;                           // Verifica si esta conectado el bluetooth
+    bool modeData = false;  // Verifica si esta conectado el bluetooth
     bool commandActivate = false;
-    bool systemCommand = false;
     bool commandSystem = false;
     bool modeMotor = false;
+    bool ledOneActivate = false;
+    bool ledTwoActivate = false;
   //INT
-    int y;                                  // Parte de la funcion de selector de menu
-    int x;
+    int y;  // Parte de la funcion de selector de menu
+    int x;  // Parte de la funcion de submenu
+    int uptime;
     int commandsSelect;
     int commandLen = sizeof(commandsTxt) / sizeof(commandsTxt[0]);
-
+    int ledMenu = 0;
 //Function that only execute only one tine
 void setup() {
   //Start the bluetooth and Serial Port
   bluetooth.begin(9600);
   Serial.begin(9600);
+
+  //initialization of digital Pins
+  initPins();
+
   //Start the LCD with IC2
   lcd.init();
   lcd.backlight();
   beginMessage();
+
   //Start the servo-motor
   motor.attach(servo_motor);
 }
@@ -65,13 +77,18 @@ void setup() {
 void loop() {
   if (bluetooth.available())
   {
+    uptime = millis() / 1000;
     modeData = true;
     serialData = bluetooth.read();
-    Serial.print(serialData);
     clean(serialData);
   }
 
   mode();
+}
+
+void initPins(){
+  pinMode(ledOne, OUTPUT);
+  pinMode(ledTwo, OUTPUT);
 }
 
 void beginMessage(){
@@ -125,7 +142,6 @@ void mode(){
     lcd.setCursor(0, 1);
     lcd.print("Conexion");
   }
-  Serial.println(modeData);
 }
 
 //NOTE - Funcion de menu
@@ -142,11 +158,10 @@ void select(){
   {
     switch (serialData)
     {
-    case '3': // Right
-      serialData = '0';
-      break;
     case '4': // Left
       serialData = '0';
+      x = 0;
+      commandActivate = false;
       break;
     default:
       break;
@@ -167,6 +182,7 @@ void select(){
     case '3': // Right
       x = 1;
       commandsSelect = 0;
+      commandActivate = true;
       serialData = '0';
       break;
     case '4': // Left
@@ -260,35 +276,38 @@ void subMenu(){
     //Seleccion de las opciones del menu
     if (y == 0)
     {
-      willBeAdded();
+      ledOneFunction();
     }
+
     if (y == 1)
     {
-      willBeAdded();
+      ledTwoFunction();
     }
+
     if (y == 2)
     {
       systemOperativeCommand();
     }
+
     if (y == 3)
     {
-      willBeAdded();
+      uptimeFunction();
     }
+
     if (y == 4)
     {
       willBeAdded();
     }
+
     if (y == 5)
     {
       willBeAdded();
     }
+
     if (y == 6)
     {
       willBeAdded();
     }
-  }else
-  {
-    systemCommand = false;
   }
   return;
 }
@@ -312,10 +331,9 @@ return;
 
 void systemOperativeCommand(){
   lcd.setCursor(0, 0);
-  lcd.print("-SO: AROPSY-");
+  lcd.print("---SO: AROPSY---");
   lcd.setCursor(0, 1);
   lcd.print("-Based in C++ --");
-  delay(500);
   return;
 }
 //NOTE - Funcion de controlar servomotor
@@ -341,17 +359,93 @@ void Motor(){
 }
 
 void ledOneFunction(){
+  switch(serialData){
+    case '1':
+      commandsSelect = 0;
+      serialData = 0;
+      break;
+    case '2':
+      commandsSelect = 1;
+      serialData = 0;
+     break;
+    case '3':
+      if(commandsSelect == 0){
+        ledOneActivate = true;
+      }else{
+        ledOneActivate = false;
+      }
+      break;
+  }
 
+  if(commandsSelect == 0){
+    lcd.setCursor(0,0);
+    lcd.print(">" + ledsText[0]);
+    lcd.setCursor(1,1);
+    lcd.print(ledsText[1]);
+  }else{
+    lcd.setCursor(1,0);
+    lcd.print(ledsText[0]);
+    lcd.setCursor(0,1);
+    lcd.print(">" + ledsText[1]);
+  }
+
+  if(ledOneActivate){
+    digitalWrite(ledOne, HIGH);
+  }else{
+    digitalWrite(ledOne, LOW);
+  }
 }
+
 void ledTwoFunction(){
+  lcd.clear();
+  switch(serialData){
+    case '1':
+      commandsSelect = 0;
+      serialData = '0';
+      break;
+    case '2':
+      commandsSelect = 1;
+      serialData = '0';
+      break;
+    case '3':
+      if(commandsSelect == 0){
+        ledTwoActivate = true;
+      }else{
+        ledTwoActivate = false;
+      }
+      break;
+  }
 
-}
+  if(commandsSelect == 0){
+    lcd.setCursor(0,0);
+    lcd.print(">" + ledsText[0]);
+    lcd.setCursor(1,1);
+    lcd.print(ledsText[1]);
+  }else if(commandsSelect == 1){
+    lcd.setCursor(1,0);
+    lcd.print(ledsText[0]);
+    lcd.setCursor(0,1);
+    lcd.print(">" + ledsText[1]);
+  }
 
-void tempFunction(){
-
+  if(ledTwoActivate){
+    digitalWrite(ledTwo, HIGH);
+  }else{
+    digitalWrite(ledTwo, LOW);
+  }
 }
 
 void uptimeFunction(){
+  lcd.clear();
+  lcd.setCursor(0,0);
+  lcd.print("-----Uptime-----");
+  lcd.setCursor(0,1);
+  lcd.print(uptime);
+  lcd.setCursor(9,1);
+  lcd.print("seconds");
+}
+
+void tempFunction(){
 
 }
 
