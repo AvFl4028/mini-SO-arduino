@@ -29,13 +29,10 @@ This is a little operative system that I do from scratch to practice my Arduino 
     | Pins  | Pins Arduino (Digitals)|
     |---|---|
     | Data (Yellow wire)  | 6  |
-- - -
-## Functions that will be added
-- On/Off with 2 LEDS
-- Temperature Functionality with LM35
-- Print Text on the LCD with the app
-- Uptime
-- Servo-Motor controller
+- LED 1
+    - Digital Pin 4
+- LED 2
+    - Digital Pin 5
 - - -
 ## Images
 ![img1](img/img1.jpeg)
