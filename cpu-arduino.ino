@@ -51,10 +51,15 @@ Servo motor;
   //INT
     int y;  // Parte de la funcion de selector de menu
     int x;  // Parte de la funcion de submenu
+    int i;
+    int angle;
     int uptime;
     int commandsSelect;
     int commandLen = sizeof(commandsTxt) / sizeof(commandsTxt[0]);
     int ledMenu = 0;
+  //FLOAT
+    float sensor;
+    float temp;
 //Function that only execute only one tine
 void setup() {
   //Start the bluetooth and Serial Port
@@ -77,7 +82,6 @@ void setup() {
 void loop() {
   if (bluetooth.available())
   {
-    uptime = millis() / 1000;
     modeData = true;
     serialData = bluetooth.read();
     clean(serialData);
@@ -150,7 +154,7 @@ void menu(){
   select();
   selectMenu();
   subMenu();
-  delay(150);
+  delay(200);
 }
 
 void select(){
@@ -216,12 +220,12 @@ void select(){
 
 void selectMenu()
 {
-  if (y == 0)
+  if (y = 0)
   {
-    lcd.setCursor(0, 0);
-    lcd.print(">" + commandsTxt[0]);
-    lcd.setCursor(1, 1);
-    lcd.print(commandsTxt[1]);
+      lcd.setCursor(0, 0);
+      lcd.print(">" + commandsTxt[0]);
+      lcd.setCursor(1, 1);
+      lcd.print(commandsTxt[1]);
   }
   else if (y == 1)
   {
@@ -274,42 +278,30 @@ void subMenu(){
   {
     lcd.clear();
     //Seleccion de las opciones del menu
-    if (y == 0)
-    {
-      ledOneFunction();
-    }
-
-    if (y == 1)
-    {
-      ledTwoFunction();
-    }
-
-    if (y == 2)
-    {
-      systemOperativeCommand();
-    }
-
-    if (y == 3)
-    {
-      uptimeFunction();
-    }
-
-    if (y == 4)
-    {
-      willBeAdded();
-    }
-
-    if (y == 5)
-    {
-      willBeAdded();
-    }
-
-    if (y == 6)
-    {
-      willBeAdded();
+    switch(y){
+      case 0:
+        ledOneFunction();
+        break;
+      case 1:
+        ledTwoFunction();
+        break;
+      case 2:
+        systemOperativeCommand();
+        break;
+      case 3:
+        uptimeFunction();
+        break;
+      case 4:
+        tempFunction();
+        break;
+      case 5:
+        willBeAdded();
+        break;
+      case 6:
+        motorFunction();
+        break;
     }
   }
-  return;
 }
 
 //NOTE - Funcion de limpiar pantalla
@@ -324,7 +316,6 @@ void clean(char data)
     lcd.clear();
     info = "";
   }
-return;
 }
 
 //NOTE - Funcion de comandos
@@ -334,28 +325,64 @@ void systemOperativeCommand(){
   lcd.print("---SO: AROPSY---");
   lcd.setCursor(0, 1);
   lcd.print("-Based in C++ --");
-  return;
 }
 //NOTE - Funcion de controlar servomotor
 //REVIEW - NO SE HA PROBADO
-void Motor(){
-  char i;
-  int angle = map(i, 0, 9, 0, 180);
-  if (i < 180)
-  {
-    lcd.clear();
-    lcd.print("Angle error");
-  }else
-  {
-    lcd.clear();
-    lcd.setCursor(0,0);
-    lcd.print("Valor: " + i);
-
-    lcd.setCursor(0, 0);
-    lcd.print("Angulo: " + angle);
-
-    motor.write(angle);
+void motorFunction(){
+  lcd.clear();
+  switch(serialData){
+    case '1':
+      i++;
+      if(modeMotor){
+        serialData;
+      }else{
+        serialData = '0';
+      }
+      break;
+    case '2':
+      i--;
+      if(modeMotor){
+        serialData;
+      }else{
+        serialData = '0';
+      }
+      break;
+    case '3':
+      if(modeMotor){
+        modeMotor = false;
+      }else{
+        modeMotor = true;
+      }
+      serialData = '0';
+      break;
   }
+  if(i > 9){
+    i--;
+  }else if(i < 0){
+    i = 0;
+  }
+
+  if(!modeMotor){
+    lcd.setCursor(0,0);
+    lcd.print("Mode:Step - Step");
+  }else{
+    lcd.setCursor(0,0);
+    lcd.print("Mode: Continuous");
+  }
+
+  angle = map(i, 0, 9, 0, 180);
+  
+  lcd.setCursor(9,1);
+  lcd.print("Val: ");
+  lcd.setCursor(14,1);
+  lcd.print(i);
+
+  lcd.setCursor(0, 1);
+  lcd.print("Ang: ");
+  lcd.setCursor(5,1);
+  lcd.print(angle);
+
+  motor.write(angle);
 }
 
 void ledOneFunction(){
@@ -436,6 +463,7 @@ void ledTwoFunction(){
 }
 
 void uptimeFunction(){
+  uptime = millis() / 1000;
   lcd.clear();
   lcd.setCursor(0,0);
   lcd.print("-----Uptime-----");
@@ -446,7 +474,14 @@ void uptimeFunction(){
 }
 
 void tempFunction(){
+  sensor = analogRead(tempRead);
+  temp = (5.0 * sensor * 100.0) / 1024.0;
 
+  lcd.clear();
+  lcd.setCursor(0,0);
+  lcd.print("---Temperature--");
+  lcd.setCursor(0,1);
+  lcd.print(temp);
 }
 
 void printTextFunction(){
