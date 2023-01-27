@@ -19,16 +19,17 @@ Servo motor;
 // DATA
   // CHAR
     char serialData;
+
   // STRING
     String info;
     String commandsTxt[] = {
-      "led 1",
-      "led 2",
-      "SO",
-      "uptime",
-      "temperature", 
-      "print txt",
-      "Motor"
+      "Led 1 Control",
+      "Led 2 Control",
+      "About System",
+      "Uptime",
+      "Temperature", 
+      "Print text",
+      "Servo-M Control"
       };
 
     String ledsText[] = {
@@ -41,13 +42,15 @@ Servo motor;
     #define ledOne 4
     #define ledTwo 5
     #define servo_motor 6
+
   // BOOl
-    bool modeData = false;  // Verifica si esta conectado el bluetooth
-    bool commandActivate = false;
-    bool commandSystem = false;
-    bool modeMotor = false;
-    bool ledOneActivate = false;
-    bool ledTwoActivate = false;
+      bool modeData = false;  // Verifica si esta conectado el bluetooth
+      bool commandActivate = false;
+      bool commandSystem = false;
+      bool modeMotor = false;
+      bool ledOneActivate = false;
+      bool ledTwoActivate = false;
+
   //INT
     int y;  // Parte de la funcion de selector de menu
     int x;  // Parte de la funcion de submenu
@@ -57,9 +60,11 @@ Servo motor;
     int commandsSelect;
     int commandLen = sizeof(commandsTxt) / sizeof(commandsTxt[0]);
     int ledMenu = 0;
+
   //FLOAT
     float sensor;
     float temp;
+
 //Function that only execute only one tine
 void setup() {
   //Start the bluetooth and Serial Port
@@ -84,7 +89,6 @@ void loop() {
   {
     modeData = true;
     serialData = bluetooth.read();
-    clean(serialData);
   }
 
   mode();
@@ -157,6 +161,7 @@ void menu(){
   delay(200);
 }
 
+//NOTE - Function to move around the menu
 void select(){
   if (commandActivate)
   {
@@ -171,27 +176,29 @@ void select(){
       break;
     }
   }
+
   //Move in y axis in the main mode
+
   else{
     switch (serialData)
     {
     case '1': // Up
       y--;
-      serialData = '0';
+      serialData = ' ';
       break;
     case '2': // Down
       y++;
-      serialData = '0';
+      serialData = ' ';
       break;
     case '3': // Right
       x = 1;
       commandsSelect = 0;
       commandActivate = true;
-      serialData = '0';
+      serialData = ' ';
       break;
     case '4': // Left
       x = 0;
-      serialData = '0';
+      serialData = ' ';
       break;
     default:
       break;
@@ -218,57 +225,54 @@ void select(){
   }
 }
 
+//NOTE - Function of select a menu
 void selectMenu()
 {
-  if (y = 0)
+  switch (y)
   {
+    case 0:
       lcd.setCursor(0, 0);
       lcd.print(">" + commandsTxt[0]);
       lcd.setCursor(1, 1);
       lcd.print(commandsTxt[1]);
-  }
-  else if (y == 1)
-  {
-    lcd.setCursor(1, 0);
-    lcd.print(commandsTxt[0]);
-    lcd.setCursor(0, 1);
-    lcd.print(">" + commandsTxt[1]);
-  }
-  else if (y == 2)
-  {
-    lcd.clear();
-    lcd.setCursor(0, 0);
-    lcd.print(">" + commandsTxt[2]);
-    lcd.setCursor(1, 1);
-    lcd.print(commandsTxt[3]);
-  }
-  else if (y == 3)
-  {
-    lcd.setCursor(1, 0);
-    lcd.print(commandsTxt[2]);
-    lcd.setCursor(0, 1);
-    lcd.print(">" + commandsTxt[3]);
-  }
-  else if (y == 4)
-  {
-    lcd.clear();
-    lcd.setCursor(0, 0);
-    lcd.print(">" + commandsTxt[4]);
-    lcd.setCursor(1, 1);
-    lcd.print(commandsTxt[5]);
-  }
-  else if (y == 5)
-  {
-    lcd.setCursor(1, 0);
-    lcd.print(commandsTxt[4]);
-    lcd.setCursor(0, 1);
-    lcd.print(">" + commandsTxt[5]);
-  }
-  else if (y == 6)
-  {
-    lcd.clear();
-    lcd.setCursor(0, 0);
-    lcd.print(">" + commandsTxt[6]);
+      break;
+    case 1:
+      lcd.setCursor(1, 0);
+      lcd.print(commandsTxt[0]);
+      lcd.setCursor(0, 1);
+      lcd.print(">" + commandsTxt[1]);
+      break;
+    case 2:
+      lcd.clear();
+      lcd.setCursor(0, 0);
+      lcd.print(">" + commandsTxt[2]);
+      lcd.setCursor(1, 1);
+      lcd.print(commandsTxt[3]);
+      break;
+    case 3:
+      lcd.setCursor(1, 0);
+      lcd.print(commandsTxt[2]);
+      lcd.setCursor(0, 1);
+      lcd.print(">" + commandsTxt[3]);
+      break;
+    case 4:
+      lcd.clear();
+      lcd.setCursor(0, 0);
+      lcd.print(">" + commandsTxt[4]);
+      lcd.setCursor(1, 1);
+      lcd.print(commandsTxt[5]);
+      break;
+    case 5:
+      lcd.setCursor(1, 0);
+      lcd.print(commandsTxt[4]);
+      lcd.setCursor(0, 1);
+      lcd.print(">" + commandsTxt[5]);
+      break;
+    case 6:
+      lcd.clear();
+      lcd.setCursor(0, 0);
+      lcd.print(">" + commandsTxt[6]);
+      break;
   }
 }
 
@@ -295,7 +299,7 @@ void subMenu(){
         tempFunction();
         break;
       case 5:
-        willBeAdded();
+        printTextFunction();
         break;
       case 6:
         motorFunction();
@@ -305,29 +309,22 @@ void subMenu(){
 }
 
 //NOTE - Funcion de limpiar pantalla
-void clean(char data)
+void clean()
 {
-  if (data == '@')
-  {
-    lcd.clear();
-    lcd.setCursor(0,0);
-    lcd.print("Cleanning...");    
-    delay(500);
-    lcd.clear();
+  if(serialData == ' '){
     info = "";
   }
 }
 
 //NOTE - Funcion de comandos
-
 void systemOperativeCommand(){
   lcd.setCursor(0, 0);
   lcd.print("---SO: AROPSY---");
   lcd.setCursor(0, 1);
   lcd.print("-Based in C++ --");
 }
-//NOTE - Funcion de controlar servomotor
-//REVIEW - NO SE HA PROBADO
+
+//NOTE - Function to control a servomotor
 void motorFunction(){
   lcd.clear();
   switch(serialData){
@@ -385,6 +382,7 @@ void motorFunction(){
   motor.write(angle);
 }
 
+//NOTE - Function of the first led
 void ledOneFunction(){
   switch(serialData){
     case '1':
@@ -394,7 +392,7 @@ void ledOneFunction(){
     case '2':
       commandsSelect = 1;
       serialData = 0;
-     break;
+      break;
     case '3':
       if(commandsSelect == 0){
         ledOneActivate = true;
@@ -423,6 +421,7 @@ void ledOneFunction(){
   }
 }
 
+//NOTE - Function of the second led
 void ledTwoFunction(){
   lcd.clear();
   switch(serialData){
@@ -462,6 +461,7 @@ void ledTwoFunction(){
   }
 }
 
+//NOTE - Function of uptime of the SO
 void uptimeFunction(){
   uptime = millis() / 1000;
   lcd.clear();
@@ -473,6 +473,7 @@ void uptimeFunction(){
   lcd.print("seconds");
 }
 
+//NOTE - Function of check the temperature in the system
 void tempFunction(){
   sensor = analogRead(tempRead);
   temp = (5.0 * sensor * 100.0) / 1024.0;
@@ -482,12 +483,24 @@ void tempFunction(){
   lcd.print("---Temperature--");
   lcd.setCursor(0,1);
   lcd.print(temp);
+  lcd.setCursor(6,1);
+  lcd.print("Celsius");
 }
 
+//NOTE - Function to print text from the app to the SO
+//REVIEW - Add a space to the end of the word remove the text
 void printTextFunction(){
+  info += serialData;
+  lcd.clear();
+  lcd.setCursor(0,0);
+  lcd.print("--Text Received-");
+  lcd.setCursor(0,1);
+  lcd.print(info);
 
+  clean();
 }
 
+//NOTE - This function is for future additions of commands
 void willBeAdded(){
   lcd.setCursor(0,0);
   lcd.print("This function is");
