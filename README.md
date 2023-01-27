@@ -12,7 +12,8 @@ This is a little operative system that I do from scratch to practice my Arduino 
 - LCD 16 x 2
 - Module I2C
 - Module Bluetooth HC-06
-- Servo Motor (Optional)
+- Servo Motor
+- LM35 (Temperature Sensor)
 
 ## Pins Connections
 - LCD(I2C)
@@ -29,6 +30,10 @@ This is a little operative system that I do from scratch to practice my Arduino 
     | Pins  | Pins Arduino (Digitals)|
     |---|---|
     | Data (Yellow wire)  | 6  |
+- LM35
+    | Pins  | Pins Arduino (Analog)|
+    |---|---|
+    | V-Output  | A0  |
 - LED 1
     - Digital Pin 4
 - LED 2
